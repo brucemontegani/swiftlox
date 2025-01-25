@@ -1,0 +1,40 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:swiftlox}",
+            "name": "Debug swiftlox",
+            "program": "${workspaceFolder:swiftlox}/.build/debug/swiftlox",
+            "preLaunchTask": "swift: Build Debug swiftlox"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:swiftlox}",
+            "name": "Release swiftlox",
+            "program": "${workspaceFolder:swiftlox}/.build/release/swiftlox",
+            "preLaunchTask": "swift: Build Release swiftlox"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:swiftlox}",
+            "name": "Debug SwiftLoxCLI",
+            "program": "${workspaceFolder:swiftlox}/.build/debug/SwiftLoxCLI",
+            "preLaunchTask": "swift: Build Debug SwiftLoxCLI"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:swiftlox}",
+            "name": "Release SwiftLoxCLI",
+            "program": "${workspaceFolder:swiftlox}/.build/release/SwiftLoxCLI",
+            "preLaunchTask": "swift: Build Release SwiftLoxCLI"
+        }
+    ]
+}
