@@ -7,8 +7,9 @@ public class Scanner {
   private var sourceCurrentPos = 0
   private var line = 1
   private var errors: [ScannerError] = []
-  private var current: String.Index
-  private var start: String.Index
+  private var startToken: String.Index
+  private var currentIndex: String.Index
+  private var nextIndex: String.Index
 
   public struct ScannerError: Error {
     public let line: Int
@@ -17,13 +18,14 @@ public class Scanner {
 
   public init(source: String) {
     self.source = source
-    self.current = source.startIndex
-    self.start = source.startIndex
+    self.startToken = source.startIndex
+    self.currentIndex = source.startIndex
+    self.nextIndex = source.startIndex
   }
 
   public func scanTokens() -> (tokens: [Token], errors: [ScannerError]) {
     while !isAtEnd {
-      start = current
+      startToken = currentIndex
       scanToken()
     }
 
@@ -32,7 +34,7 @@ public class Scanner {
   }
 
   private func scanToken() {
-    let c = advance()
+    let c = getCharacter(at: currentIndex)
 
     switch c {
     case "(": addToken(.leftParen)
@@ -51,26 +53,27 @@ public class Scanner {
         ScannerError(line: line, message: "unexpected character: \(c)")
       )
     }
+
+    currentIndex = getNextIndex()
+
   }
 
-  private func advance() -> Character {
-    let character = source[current]
-    current = source.index(after: current)  // Move to the next character
-    return character
+  private func getNextIndex() -> String.Index {
+    return source.index(after: currentIndex)
   }
 
-  private func nextCharacter() -> Character {
-     return source[source.index(after: current)]
+  private func getCharacter(at index: String.Index) -> Character {
+    return source[index]
   }
 
   private func addToken(_ type: TokenType) {
     let text =
-      String(source[start..<current])
+      String(source[startToken..<currentIndex])
 
     tokens.append(Token(type: type, lexeme: text, line: line))
   }
 
   private var isAtEnd: Bool {
-    return current == source.endIndex
+    return currentIndex == source.endIndex
   }
 }
