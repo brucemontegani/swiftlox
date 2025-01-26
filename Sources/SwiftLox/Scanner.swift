@@ -59,6 +59,10 @@ public class Scanner {
     return character
   }
 
+  private func nextCharacter() -> Character {
+     return source[source.index(after: current)]
+  }
+
   private func addToken(_ type: TokenType) {
     let text =
       String(source[start..<current])
