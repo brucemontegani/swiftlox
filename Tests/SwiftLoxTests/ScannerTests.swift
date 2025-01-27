@@ -18,10 +18,17 @@ struct ScannerTests {
       .semiColon, .star, .eof,
     ]
 
+    let sourceWithoutSpaces = source.filter { $0 != " " }
     try #require(errors.count == 0)
     try #require(tokens.count == expectedTokenTypes.count)
     for (index, token) in tokens.enumerated() {
       #expect(token.type == expectedTokenTypes[index])
+      if token.type != .eof  {
+        if let stringIndex = sourceWithoutSpaces.index(sourceWithoutSpaces.startIndex, offsetBy: index, limitedBy: sourceWithoutSpaces.endIndex) {
+          let c = sourceWithoutSpaces[stringIndex]
+          #expect(token.lexeme == String(c))
+      }
+      }
     }
 
   }
