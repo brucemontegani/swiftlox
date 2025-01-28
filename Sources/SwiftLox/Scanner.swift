@@ -6,12 +6,12 @@ public class Scanner {
   private var tokenStartPos = 0
   private var sourceCurrentPos = 0
   private var line = 1
-  private var errors: [ScannerError] = []
+  private var errors: [ScanError] = []
   private var startToken: String.Index
   private var currentIndex: String.Index
   private var nextIndex: String.Index
 
-  public struct ScannerError: Error {
+  public struct ScanError: Error {
     public let line: Int
     public let message: String
   }
@@ -23,7 +23,7 @@ public class Scanner {
     self.nextIndex = source.startIndex
   }
 
-  public func scanTokens() -> (tokens: [Token], errors: [ScannerError]) {
+  public func scanTokens() -> (tokens: [Token], errors: [ScanError]) {
     while !isAtEnd {
       startToken = currentIndex
       scanToken()
@@ -47,15 +47,33 @@ public class Scanner {
     case "+": addToken(.plus)
     case ";": addToken(.semiColon)
     case "*": addToken(.star)
+    case "!": addToken(match("=") ? .bangEqual : .bang)
+    case "=": addToken(match("=") ? .equalEqual : .equal)
+    case ">": addToken(match("=") ? .greaterEqual : .greater)
+    case "<": addToken(match("=") ? .lessEqual : .less)
     case " ", "\t": break
     default:
       errors.append(
-        ScannerError(line: line, message: "unexpected character: \(c)")
+        ScanError(line: line, message: "unexpected character: \(c)")
       )
     }
 
     currentIndex = getNextIndex()
 
+  }
+
+  private func match(_ expected: Character) -> Bool {
+    let oldCurrIndex = currentIndex
+    currentIndex = getNextIndex()
+    if isAtEnd {
+      currentIndex = oldCurrIndex
+      return false
+    }
+    if expected != getCharacter(at: currentIndex) {
+      currentIndex = oldCurrIndex
+      return false
+    }
+    return true
   }
 
   private func getNextIndex() -> String.Index {

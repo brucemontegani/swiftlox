@@ -1,9 +1,38 @@
 public enum TokenType: Equatable {
   case leftParen, rightParen, leftBrace, rightBrace
   case comma, dot, minus, plus, semiColon, slash, star
-  case number(NumberLiteral)
+  case bang, bangEqual
+  case equal, equalEqual
+  case greater, greaterEqual
+  case less, lessEqual
+  // case number(NumberLiteral)
   case eof
   // We'll add more token types as needed
+
+  var rawValue: String {
+    switch self {
+    case .leftParen: return "("
+    case .rightParen: return ")"
+    case .leftBrace: return "{"
+    case .rightBrace: return "}"
+    case .comma: return ","
+    case .dot: return "."
+    case .minus: return "-"
+    case .plus: return "+"
+    case .semiColon: return ";"
+    case .slash: return "/"
+    case .star: return "*"
+    case .less: return "<"
+    case .equal: return "="
+    case .greater: return ">"
+    case .bang: return "!"
+    case .lessEqual: return "<="
+    case .equalEqual: return "=="
+    case .greaterEqual: return ">="
+    case .bangEqual: return "!="
+    case .eof: return ""
+    }
+  }
 }
 
 public enum NumberLiteral: Equatable {
@@ -11,7 +40,7 @@ public enum NumberLiteral: Equatable {
   case floatingPoint(Double)
 }
 
-public struct Token: CustomStringConvertible {
+public struct Token: CustomStringConvertible, Equatable {
   public let type: TokenType
   public let lexeme: String
   public let line: Int
@@ -24,13 +53,13 @@ public struct Token: CustomStringConvertible {
 
   public var description: String {
     switch type {
-    case .number(let value):
-      switch value {
-      case .integer(let intValue):
-        return "number ( \(lexeme) ) \(intValue)"
-      case .floatingPoint(let doubleValue):
-        return "number ( \(lexeme) ) \(doubleValue)"
-      }
+    // case .number(let value):
+    //   switch value {
+    //   case .integer(let intValue):
+    //     return "number ( \(lexeme) ) \(intValue)"
+    //   case .floatingPoint(let doubleValue):
+    //     return "number ( \(lexeme) ) \(doubleValue)"
+    //   }
     case .eof:
       return "eof ( \(lexeme) )"
     default:

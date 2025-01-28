@@ -6,30 +6,60 @@ import XCTest
 @testable import SwiftLox
 
 struct ScannerTests {
-  @Test("Scan Single character tokens", arguments: ["(){},.-+;*", "( ) { } , . - + ; *"])
-  func scanSingleCharTokensWithSpaces(source: String) throws {
+  @Test(
+    "Scan single character tokens with and without spaces",
+    arguments: ["(){},.-+;*=!><", "( ) { } , . - + ; * = ! > <"])
+  func scanSingleOnlyCharTokens(source: String) throws {
     let scanner = Scanner(source: source)
     let (tokens, errors) = scanner.scanTokens()
 
-    let expectedTokenTypes: [TokenType] = [
-      .leftParen, .rightParen,
-      .leftBrace, .rightBrace,
-      .comma, .dot, .minus, .plus,
-      .semiColon, .star, .eof,
+    let expectedTokens = [
+      Token(type: .leftParen, lexeme: "(", line: 1),
+      Token(type: .rightParen, lexeme: ")", line: 1),
+      Token(type: .leftBrace, lexeme: "{", line: 1),
+      Token(type: .rightBrace, lexeme: "}", line: 1),
+      Token(type: .comma, lexeme: ",", line: 1),
+      Token(type: .dot, lexeme: ".", line: 1),
+      Token(type: .minus, lexeme: "-", line: 1),
+      Token(type: .plus, lexeme: "+", line: 1),
+      Token(type: .semiColon, lexeme: ";", line: 1),
+      Token(type: .star, lexeme: "*", line: 1),
+      Token(type: .equal, lexeme: "=", line: 1),
+      Token(type: .bang, lexeme: "!", line: 1),
+      Token(type: .greater, lexeme: ">", line: 1),
+      Token(type: .less, lexeme: "<", line: 1),
+      Token(type: .eof, lexeme: "", line: 1),
     ]
 
-    let sourceWithoutSpaces = source.filter { $0 != " " }
     try #require(errors.count == 0)
-    try #require(tokens.count == expectedTokenTypes.count)
+    try #require(tokens.count == expectedTokens.count)
+
     for (index, token) in tokens.enumerated() {
-      #expect(token.type == expectedTokenTypes[index])
-      if token.type != .eof  {
-        if let stringIndex = sourceWithoutSpaces.index(sourceWithoutSpaces.startIndex, offsetBy: index, limitedBy: sourceWithoutSpaces.endIndex) {
-          let c = sourceWithoutSpaces[stringIndex]
-          #expect(token.lexeme == String(c))
-      }
-      }
+      #expect(token == expectedTokens[index])
     }
 
   }
+
+  @Test("Scan Double character tokens", arguments: ["!= == >= <="])
+  func scanSingleDoubleCharTokens(source: String) throws {
+    let scanner = Scanner(source: source)
+    let (tokens, errors) = scanner.scanTokens()
+
+    let expectedTokens = [
+      Token(type: .bangEqual, lexeme: "!=", line: 1),
+      Token(type: .equalEqual, lexeme: "==", line: 1),
+      Token(type: .greaterEqual, lexeme: ">=", line: 1),
+      Token(type: .lessEqual, lexeme: "<=", line: 1),
+      Token(type: .eof, lexeme: "", line: 1),
+    ]
+
+    try #require(errors.count == 0)
+    try #require(tokens.count == expectedTokens.count)
+
+    for (index, token) in tokens.enumerated() {
+      #expect(token == expectedTokens[index])
+    }
+
+  }
+
 }
