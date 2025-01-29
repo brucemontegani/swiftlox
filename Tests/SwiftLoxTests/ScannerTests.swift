@@ -140,4 +140,26 @@ struct ScannerTests {
 
   }
 
+  @Test(
+    "Scan for a integer number and floating point number",
+    arguments: ["1234 123.45"])
+  func scanNumber(source: String) throws {
+    let scanner = Scanner(source: source)
+    let result = scanner.scanTokens()
+
+    switch result {
+    case .success(let tokens):
+      try #require(tokens.count == 3)
+      #expect(tokens[0].type == .number(.integer(1234)))
+      #expect(tokens[0].lexeme == "1234")
+      #expect(tokens[0].line == 1)
+      #expect(tokens[1].type == .number(.floatingPoint(123.45)))
+      #expect(tokens[1].lexeme == "123.45")
+      #expect(tokens[1].line == 1)
+    case .failure(_):
+      Issue.record("Failed with Scan Errors")
+    }
+
+  }
+
 }

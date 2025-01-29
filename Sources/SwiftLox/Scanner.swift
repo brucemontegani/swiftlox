@@ -13,11 +13,11 @@ public class Scanner {
     self.start = source.startIndex
   }
 
-  public struct ScannerErrors: Error {
+  public struct ScannerErrors: Error, Equatable {
     public let errors: [ScanError]
   }
 
-  public struct ScanError: Error {
+  public struct ScanError: Error, Equatable {
     public let line: Int
     public let message: String
   }
@@ -65,18 +65,8 @@ public class Scanner {
     case "+": token = createToken(type: .plus)
     case ";": token = createToken(type: .semiColon)
     case "*": token = createToken(type: .star)
-    case "\"":
-      let result = string()
-      switch result {
-      case .success(let stringToken):
-        if let stringToken {
-          token = stringToken
-        } else {
-          return .success(nil)
-        }
-      case .failure(let error):
-        return .failure(error)
-      }
+    case "\"": return string()
+    case let c where c.isWholeNumber: token = number()
     case "/": token = isComment() ? nil : createToken(type: .slash)
     case "!": token = createToken(type: match("=") ? .bangEqual : .bang)
     case "=": token = createToken(type: match("=") ? .equalEqual : .equal)
@@ -102,6 +92,11 @@ public class Scanner {
   private func peek() -> Character? {
     if isAtEnd() { return nil }
     return source[current]
+  }
+
+  private func peekNext() -> Character? {
+    if isAtEnd() { return nil }
+    return source[source.index(after: current)]
   }
 
   private func advance() -> Character {
@@ -144,6 +139,37 @@ public class Scanner {
     let text = String(source[stringStart..<stringEnd])
     return .success(Token(type: .string(text), lexeme: text, line: line))
 
+  }
+
+  private func number() -> Token {
+    while let next = peek(), next.isWholeNumber {
+      _ = advance()
+    }
+
+    var isInteger = true
+
+    if let next = peek(), next == "." {
+      if let peekNext = peekNext(), peekNext.isWholeNumber {
+        isInteger = false
+        _ = advance()
+        while let next = peek(), next.isWholeNumber {
+          _ = advance()
+        }
+      }
+    }
+
+    let valueAsString = String(source[start..<current])
+    let tokenType = TokenType.number(
+      isInteger ? .integer(Int(valueAsString)!) : .floatingPoint(Double(valueAsString)!))
+
+    return createToken(type: tokenType)
+  }
+
+  private func identifier() -> Token {
+    while let next = peek(), next.isAlphaNumeric {
+      _ = advance()
+    }
+    return Token(type: .identifier, lexeme: String(source[start..<current]), line: line)
   }
 
   private func createToken(type: TokenType) -> Token {
