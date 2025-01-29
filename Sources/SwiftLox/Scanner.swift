@@ -2,96 +2,107 @@
 
 public class Scanner {
   private let source: String
-  private var tokens: [Token] = []
-  private var tokenStartPos = 0
-  private var sourceCurrentPos = 0
   private var line = 1
-  private var errors: [ScanError] = []
-  private var startToken: String.Index
-  private var currentIndex: String.Index
-  private var nextIndex: String.Index
+  private var current: String.Index
+
+  public init(source: String) {
+    self.source = source
+    self.current = source.startIndex
+  }
+
+  public struct ScannerErrors: Error {
+    public let errors: [ScanError]
+  }
 
   public struct ScanError: Error {
     public let line: Int
     public let message: String
   }
 
-  public init(source: String) {
-    self.source = source
-    self.startToken = source.startIndex
-    self.currentIndex = source.startIndex
-    self.nextIndex = source.startIndex
-  }
+  public func scanTokens() -> Result<[Token], ScannerErrors> {
+    var tokens: [Token] = []
+    var errors: [ScanError] = []
 
-  public func scanTokens() -> (tokens: [Token], errors: [ScanError]) {
-    while !isAtEnd {
-      startToken = currentIndex
-      scanToken()
+    while !isAtEnd() {
+      let result = scanToken()
+
+      switch result {
+      case .success(let token):
+        if let token {
+          tokens.append(token)
+        }
+      case .failure(let error):
+        errors.append(error)
+      }
     }
 
     tokens.append(Token(type: .eof, lexeme: "", line: line))
-    return (tokens, errors)
+
+    if errors.isEmpty {
+      return .success(tokens)
+    } else {
+      return .failure(ScannerErrors(errors: errors))
+    }
   }
 
-  private func scanToken() {
-    let c = getCharacter(at: currentIndex)
+  private func scanToken() -> Result<Token?, ScanError> {
+    let char = advance()
 
-    switch c {
-    case "(": addToken(.leftParen)
-    case ")": addToken(.rightParen)
-    case "{": addToken(.leftBrace)
-    case "}": addToken(.rightBrace)
-    case ",": addToken(.comma)
-    case ".": addToken(.dot)
-    case "-": addToken(.minus)
-    case "+": addToken(.plus)
-    case ";": addToken(.semiColon)
-    case "*": addToken(.star)
-    case "!": addToken(match("=") ? .bangEqual : .bang)
-    case "=": addToken(match("=") ? .equalEqual : .equal)
-    case ">": addToken(match("=") ? .greaterEqual : .greater)
-    case "<": addToken(match("=") ? .lessEqual : .less)
-    case " ", "\t": break
+    var token: Token? = nil
+
+    switch char {
+    case "(": token = Token(type: .leftParen, lexeme: "(", line: line)
+    case ")": token = Token(type: .rightParen, lexeme: ")", line: line)
+    case "{": token = Token(type: .leftBrace, lexeme: "{", line: line)
+    case "}": token = Token(type: .rightBrace, lexeme: "}", line: line)
+    case ",": token = Token(type: .comma, lexeme: ",", line: line)
+    case ".": token = Token(type: .dot, lexeme: ".", line: line)
+    case "-": token = Token(type: .minus, lexeme: "-", line: line)
+    case "+": token = Token(type: .plus, lexeme: "+", line: line)
+    case ";": token = Token(type: .semiColon, lexeme: ";", line: line)
+    case "*": token = Token(type: .star, lexeme: "*", line: line)
+    case "!":
+      token =
+        match("=")
+        ? Token(type: .bangEqual, lexeme: "!=", line: line)
+        : Token(type: .bang, lexeme: "!", line: line)
+    case "=":
+      token =
+        match("=")
+        ? Token(type: .equalEqual, lexeme: "==", line: line)
+        : Token(type: .equal, lexeme: "=", line: line)
+    case ">":
+      token =
+        match("=")
+        ? Token(type: .greaterEqual, lexeme: ">=", line: line)
+        : Token(type: .greater, lexeme: ">", line: line)
+    case "<":
+      token =
+        match("=")
+        ? Token(type: .lessEqual, lexeme: "<=", line: line)
+        : Token(type: .less, lexeme: "<", line: line)
+    case let c where c.isWhitespace: return .success(nil)
     default:
-      errors.append(
-        ScanError(line: line, message: "unexpected character: \(c)")
-      )
+      return .failure(ScanError(line: line, message: "unexpected character: \(char)"))
     }
 
-    currentIndex = getNextIndex()
-
+    return .success(token)
   }
 
   private func match(_ expected: Character) -> Bool {
-    let oldCurrIndex = currentIndex
-    currentIndex = getNextIndex()
-    if isAtEnd {
-      currentIndex = oldCurrIndex
-      return false
-    }
-    if expected != getCharacter(at: currentIndex) {
-      currentIndex = oldCurrIndex
-      return false
-    }
+    guard !isAtEnd() && source[current] == expected else { return false }
+    _ = advance()
     return true
   }
 
-  private func getNextIndex() -> String.Index {
-    return source.index(after: currentIndex)
+  private func advance() -> Character {
+    let char = source[current]
+    current = source.index(after: current)
+    return char
   }
 
-  private func getCharacter(at index: String.Index) -> Character {
-    return source[index]
+  private func isAtEnd() -> Bool {
+    return current >= source.endIndex
   }
 
-  private func addToken(_ type: TokenType) {
-    let text =
-      String(source[startToken...currentIndex])
-
-    tokens.append(Token(type: type, lexeme: text, line: line))
-  }
-
-  private var isAtEnd: Bool {
-    return currentIndex == source.endIndex
-  }
 }

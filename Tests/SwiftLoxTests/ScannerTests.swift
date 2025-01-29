@@ -11,7 +11,7 @@ struct ScannerTests {
     arguments: ["(){},.-+;*=!><", "( ) { } , . - + ; * = ! > <"])
   func scanSingleOnlyCharTokens(source: String) throws {
     let scanner = Scanner(source: source)
-    let (tokens, errors) = scanner.scanTokens()
+    let result = scanner.scanTokens()
 
     let expectedTokens = [
       Token(type: .leftParen, lexeme: "(", line: 1),
@@ -31,11 +31,14 @@ struct ScannerTests {
       Token(type: .eof, lexeme: "", line: 1),
     ]
 
-    try #require(errors.count == 0)
-    try #require(tokens.count == expectedTokens.count)
-
-    for (index, token) in tokens.enumerated() {
-      #expect(token == expectedTokens[index])
+    switch result {
+    case .success(let tokens):
+      try #require(tokens.count == expectedTokens.count)
+      for (index, token) in tokens.enumerated() {
+        #expect(token == expectedTokens[index])
+      }
+    case .failure(let errors):
+      try #require(errors.errors.count == 0)
     }
 
   }
@@ -43,7 +46,7 @@ struct ScannerTests {
   @Test("Scan Double character tokens", arguments: ["!= == >= <="])
   func scanSingleDoubleCharTokens(source: String) throws {
     let scanner = Scanner(source: source)
-    let (tokens, errors) = scanner.scanTokens()
+    let result = scanner.scanTokens()
 
     let expectedTokens = [
       Token(type: .bangEqual, lexeme: "!=", line: 1),
@@ -53,11 +56,14 @@ struct ScannerTests {
       Token(type: .eof, lexeme: "", line: 1),
     ]
 
-    try #require(errors.count == 0)
-    try #require(tokens.count == expectedTokens.count)
-
-    for (index, token) in tokens.enumerated() {
-      #expect(token == expectedTokens[index])
+    switch result {
+    case .success(let tokens):
+      try #require(tokens.count == expectedTokens.count)
+      for (index, token) in tokens.enumerated() {
+        #expect(token == expectedTokens[index])
+      }
+    case .failure(let errors):
+      try #require(errors.errors.count == 0)
     }
 
   }
