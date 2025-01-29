@@ -8,7 +8,7 @@ import XCTest
 struct ScannerTests {
   @Test(
     "Scan single character tokens with and without spaces",
-    arguments: ["(){},.-+;*=!><", "( ) { } , . - + ; * = ! > <"])
+    arguments: ["(){},.-+;*=!></", "( ) { } , . - + ; * = ! > < /"])
   func scanSingleOnlyCharTokens(source: String) throws {
     let scanner = Scanner(source: source)
     let result = scanner.scanTokens()
@@ -28,6 +28,7 @@ struct ScannerTests {
       Token(type: .bang, lexeme: "!", line: 1),
       Token(type: .greater, lexeme: ">", line: 1),
       Token(type: .less, lexeme: "<", line: 1),
+      Token(type: .slash, lexeme: "/", line: 1),
       Token(type: .eof, lexeme: "", line: 1),
     ]
 
@@ -68,17 +69,13 @@ struct ScannerTests {
 
   }
 
-  @Test("Scan for slash and comment tokens", arguments: ["/ //"])
+  @Test("Scan for comment tokens", arguments: ["//comment\n"])
   func scanSlashAndCommentTokens(source: String) throws {
     let scanner = Scanner(source: source)
     let result = scanner.scanTokens()
 
     let expectedTokens = [
-      Token(type: .bangEqual, lexeme: "!=", line: 1),
-      Token(type: .equalEqual, lexeme: "==", line: 1),
-      Token(type: .greaterEqual, lexeme: ">=", line: 1),
-      Token(type: .lessEqual, lexeme: "<=", line: 1),
-      Token(type: .eof, lexeme: "", line: 1),
+      Token(type: .eof, lexeme: "", line: 1)
     ]
 
     switch result {

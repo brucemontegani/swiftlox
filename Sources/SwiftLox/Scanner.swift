@@ -64,11 +64,18 @@ public class Scanner {
     case "+": token = createToken(type: .plus)
     case ";": token = createToken(type: .semiColon)
     case "*": token = createToken(type: .star)
+    case "/":
+      if match("/") {  // Skip comments
+        while let next = peek(), next != "\n" {
+          _ = advance()
+        }
+      } else {
+        token = createToken(type: .slash)
+      }
     case "!": token = createToken(type: match("=") ? .bangEqual : .bang)
     case "=": token = createToken(type: match("=") ? .equalEqual : .equal)
     case ">": token = createToken(type: match("=") ? .greaterEqual : .greater)
     case "<": token = createToken(type: match("=") ? .lessEqual : .less)
-    case "/": token = createToken(type: .star)
     case let c where c.isWhitespace: return .success(nil)
     default:
       return .failure(ScanError(line: line, message: "unexpected character: \(char)"))
@@ -81,6 +88,11 @@ public class Scanner {
     guard !isAtEnd() && source[current] == expected else { return false }
     _ = advance()
     return true
+  }
+
+  private func peek() -> Character? {
+    if isAtEnd() { return nil }
+    return source[current]
   }
 
   private func advance() -> Character {

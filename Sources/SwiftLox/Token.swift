@@ -7,6 +7,7 @@ public enum TokenType: Equatable {
   case equal, equalEqual
   case greater, greaterEqual
   case less, lessEqual
+  case comment
   // case number(NumberLiteral)
   case eof
   // We'll add more token types as needed
@@ -32,8 +33,8 @@ public enum TokenType: Equatable {
     case .equalEqual: return "=="
     case .greaterEqual: return ">="
     case .bangEqual: return "!="
-    case .eof: return "eof"
-    // case .number: return "number"
+    case .eof: return ""
+    case .comment: return ""
     }
   }
 }
