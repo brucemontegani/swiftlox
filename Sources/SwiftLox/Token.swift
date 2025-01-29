@@ -1,7 +1,9 @@
 public enum TokenType: Equatable {
-  case leftParen, rightParen, leftBrace, rightBrace
+  case leftParen, rightParen
+  case leftBrace, rightBrace
   case comma, dot, minus, plus, semiColon, slash, star
-  case bang, bangEqual
+  case bang
+  case bangEqual
   case equal, equalEqual
   case greater, greaterEqual
   case less, lessEqual
@@ -30,7 +32,8 @@ public enum TokenType: Equatable {
     case .equalEqual: return "=="
     case .greaterEqual: return ">="
     case .bangEqual: return "!="
-    case .eof: return ""
+    case .eof: return "eof"
+    // case .number: return "number"
     }
   }
 }
