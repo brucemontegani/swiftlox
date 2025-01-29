@@ -68,4 +68,29 @@ struct ScannerTests {
 
   }
 
+  @Test("Scan for slash and comment tokens", arguments: ["/ //"])
+  func scanSlashAndCommentTokens(source: String) throws {
+    let scanner = Scanner(source: source)
+    let result = scanner.scanTokens()
+
+    let expectedTokens = [
+      Token(type: .bangEqual, lexeme: "!=", line: 1),
+      Token(type: .equalEqual, lexeme: "==", line: 1),
+      Token(type: .greaterEqual, lexeme: ">=", line: 1),
+      Token(type: .lessEqual, lexeme: "<=", line: 1),
+      Token(type: .eof, lexeme: "", line: 1),
+    ]
+
+    switch result {
+    case .success(let tokens):
+      try #require(tokens.count == expectedTokens.count)
+      for (index, token) in tokens.enumerated() {
+        #expect(token == expectedTokens[index])
+      }
+    case .failure(let errors):
+      try #require(errors.errors.count == 0)
+    }
+
+  }
+
 }

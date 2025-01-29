@@ -4,10 +4,12 @@ public class Scanner {
   private let source: String
   private var line = 1
   private var current: String.Index
+  private var start: String.Index
 
   public init(source: String) {
     self.source = source
     self.current = source.startIndex
+    self.start = source.startIndex
   }
 
   public struct ScannerErrors: Error {
@@ -24,6 +26,7 @@ public class Scanner {
     var errors: [ScanError] = []
 
     while !isAtEnd() {
+      start = current
       let result = scanToken()
 
       switch result {
@@ -51,36 +54,21 @@ public class Scanner {
     var token: Token? = nil
 
     switch char {
-    case "(": token = Token(type: .leftParen, lexeme: "(", line: line)
-    case ")": token = Token(type: .rightParen, lexeme: ")", line: line)
-    case "{": token = Token(type: .leftBrace, lexeme: "{", line: line)
-    case "}": token = Token(type: .rightBrace, lexeme: "}", line: line)
-    case ",": token = Token(type: .comma, lexeme: ",", line: line)
-    case ".": token = Token(type: .dot, lexeme: ".", line: line)
-    case "-": token = Token(type: .minus, lexeme: "-", line: line)
-    case "+": token = Token(type: .plus, lexeme: "+", line: line)
-    case ";": token = Token(type: .semiColon, lexeme: ";", line: line)
-    case "*": token = Token(type: .star, lexeme: "*", line: line)
-    case "!":
-      token =
-        match("=")
-        ? Token(type: .bangEqual, lexeme: "!=", line: line)
-        : Token(type: .bang, lexeme: "!", line: line)
-    case "=":
-      token =
-        match("=")
-        ? Token(type: .equalEqual, lexeme: "==", line: line)
-        : Token(type: .equal, lexeme: "=", line: line)
-    case ">":
-      token =
-        match("=")
-        ? Token(type: .greaterEqual, lexeme: ">=", line: line)
-        : Token(type: .greater, lexeme: ">", line: line)
-    case "<":
-      token =
-        match("=")
-        ? Token(type: .lessEqual, lexeme: "<=", line: line)
-        : Token(type: .less, lexeme: "<", line: line)
+    case "(": token = createToken(type: .leftParen)
+    case ")": token = createToken(type: .rightParen)
+    case "{": token = createToken(type: .leftBrace)
+    case "}": token = createToken(type: .rightBrace)
+    case ",": token = createToken(type: .comma)
+    case ".": token = createToken(type: .dot)
+    case "-": token = createToken(type: .minus)
+    case "+": token = createToken(type: .plus)
+    case ";": token = createToken(type: .semiColon)
+    case "*": token = createToken(type: .star)
+    case "!": token = createToken(type: match("=") ? .bangEqual : .bang)
+    case "=": token = createToken(type: match("=") ? .equalEqual : .equal)
+    case ">": token = createToken(type: match("=") ? .greaterEqual : .greater)
+    case "<": token = createToken(type: match("=") ? .lessEqual : .less)
+    case "/": token = createToken(type: .star)
     case let c where c.isWhitespace: return .success(nil)
     default:
       return .failure(ScanError(line: line, message: "unexpected character: \(char)"))
@@ -99,6 +87,10 @@ public class Scanner {
     let char = source[current]
     current = source.index(after: current)
     return char
+  }
+
+  private func createToken(type: TokenType) -> Token {
+    return Token(type: type, lexeme: String(source[start..<current]), line: line)
   }
 
   private func isAtEnd() -> Bool {
