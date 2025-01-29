@@ -12,7 +12,8 @@ public enum TokenType: Equatable {
   case number(NumberLiteral)
   case identifier
   case eof
-  // We'll add more token types as needed
+  case keyword(Keyword)
+  // Keywords
 
   var rawValue: String {
     switch self {
@@ -40,8 +41,27 @@ public enum TokenType: Equatable {
     case .string: return "string"
     case .number: return "number"
     case .identifier: return "identifier"
+    case .keyword: return "identifier"
     }
   }
+}
+
+public enum Keyword: String, Equatable {
+  case AND = "and"
+  case CLASS = "class"
+  case ELSE = "else"
+  case FALSE = "false"
+  case FOR = "for"
+  case FUN = "fun"
+  case IF = "if"
+  case OR = "or"
+  case PRINT = "print"
+  case RETURN = "return"
+  case SUPER = "super"
+  case THIS = "this"
+  case TRUE = "true"
+  case VAR = "var"
+  case WHILE = "while"
 }
 
 public enum NumberLiteral: Equatable {

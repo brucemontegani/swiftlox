@@ -170,7 +170,12 @@ public class Scanner {
     while let next = peek(), next.isAlphaNumeric {
       _ = advance()
     }
-    return Token(type: .identifier, lexeme: String(source[start..<current]), line: line)
+
+    let lexeme = String(source[start..<current])
+    if let keyword = Keyword(rawValue: lexeme) {
+      return Token(type: .keyword(keyword), lexeme: lexeme, line: line)
+    }
+    return Token(type: .identifier, lexeme: lexeme, line: line)
   }
 
   private func createToken(type: TokenType) -> Token {
