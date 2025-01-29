@@ -90,4 +90,25 @@ struct ScannerTests {
 
   }
 
+  @Test("Scan for new line. Should increase line number by 1")
+  func scanNewLine() throws {
+    let source = "\n\n"
+    let scanner = Scanner(source: source)
+    let result = scanner.scanTokens()
+
+    let expectedTokens = [
+      Token(type: .eof, lexeme: "", line: 1)
+    ]
+
+    switch result {
+    case .success(let tokens):
+      try #require(tokens.count == expectedTokens.count)
+      #expect(tokens[0].type == .eof)
+      #expect(tokens[0].lexeme == "")
+      #expect(tokens[0].line == 3)
+    case .failure(let errors):
+      try #require(errors.errors.count == 0)
+    }
+
+  }
 }

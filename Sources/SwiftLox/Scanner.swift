@@ -76,6 +76,9 @@ public class Scanner {
     case "=": token = createToken(type: match("=") ? .equalEqual : .equal)
     case ">": token = createToken(type: match("=") ? .greaterEqual : .greater)
     case "<": token = createToken(type: match("=") ? .lessEqual : .less)
+    case let c where c.isNewline:
+      line += 1
+      return .success(nil)
     case let c where c.isWhitespace: return .success(nil)
     default:
       return .failure(ScanError(line: line, message: "unexpected character: \(char)"))
