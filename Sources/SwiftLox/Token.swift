@@ -10,6 +10,7 @@ public enum TokenType: Equatable {
   case comment
   case string(String)
   case number(NumberLiteral)
+  case identifier
   case eof
   // We'll add more token types as needed
 
@@ -38,6 +39,7 @@ public enum TokenType: Equatable {
     case .comment: return "comment"
     case .string: return "string"
     case .number: return "number"
+    case .identifier: return "identifier"
     }
   }
 }

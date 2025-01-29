@@ -162,4 +162,29 @@ struct ScannerTests {
 
   }
 
+  @Test(
+    "Scan for an identifier",
+    arguments: ["Abc9_R abcD8 _1ABC"])
+  func scanIdentifier(source: String) throws {
+    let scanner = Scanner(source: source)
+    let result = scanner.scanTokens()
+
+    switch result {
+    case .success(let tokens):
+      try #require(tokens.count == 4)
+      #expect(tokens[0].type == .identifier)
+      #expect(tokens[0].lexeme == "Abc9_R")
+      #expect(tokens[0].line == 1)
+      #expect(tokens[1].type == .identifier)
+      #expect(tokens[1].lexeme == "abcD8")
+      #expect(tokens[1].line == 1)
+      #expect(tokens[2].type == .identifier)
+      #expect(tokens[2].lexeme == "_1ABC")
+      #expect(tokens[2].line == 1)
+    case .failure(_):
+      Issue.record("Failed with Scan Errors")
+    }
+
+  }
+
 }

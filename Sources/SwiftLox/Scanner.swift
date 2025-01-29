@@ -68,6 +68,7 @@ public class Scanner {
     case "\"": return string()
     case let c where c.isWholeNumber: token = number()
     case "/": token = isComment() ? nil : createToken(type: .slash)
+    case let c where c.isAlpha: token = identifier()
     case "!": token = createToken(type: match("=") ? .bangEqual : .bang)
     case "=": token = createToken(type: match("=") ? .equalEqual : .equal)
     case ">": token = createToken(type: match("=") ? .greaterEqual : .greater)
@@ -180,4 +181,14 @@ public class Scanner {
     return current >= source.endIndex
   }
 
+}
+
+extension Character {
+  public var isAlpha: Bool {
+    return ("A"..."Z").contains(self) || ("a"..."z").contains(self) || self == "_"
+  }
+
+  public var isAlphaNumeric: Bool {
+    return isAlpha || isWholeNumber
+  }
 }
