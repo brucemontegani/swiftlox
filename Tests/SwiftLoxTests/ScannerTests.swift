@@ -74,16 +74,16 @@ struct ScannerTests {
     let scanner = Scanner(source: source)
     let result = scanner.scanTokens()
 
-    let expectedTokens = [
-      Token(type: .eof, lexeme: "", line: 1)
-    ]
-
     switch result {
     case .success(let tokens):
-      try #require(tokens.count == expectedTokens.count)
-      for (index, token) in tokens.enumerated() {
-        #expect(token == expectedTokens[index])
-      }
+      try #require(tokens.count == 1)
+      #expect(tokens[0].type == .eof)
+      #expect(tokens[0].lexeme == "")
+      #expect(tokens[0].line == 2)
+
+    // for (index, token) in tokens.enumerated() {
+    //   #expect(token == expectedTokens[index])
+    // }
     case .failure(let errors):
       try #require(errors.errors.count == 0)
     }
@@ -111,4 +111,33 @@ struct ScannerTests {
     }
 
   }
+
+  @Test("Scan for a string")
+  func scanString() throws {
+    let source = "\"This is a string\"\n\"and this is another string\""
+    let scanner = Scanner(source: source)
+    let result = scanner.scanTokens()
+
+    // let expectedTokens = [
+    //   Token(type: .string("This is a string"), lexeme: "This is a string", line: 1),
+    //   Token(
+    //     type: .string("and this is another string"), lexeme: "and this is another string", line: 2),
+    //   Token(type: .eof, lexeme: "", line: 2),
+    // ]
+
+    switch result {
+    case .success(let tokens):
+      try #require(tokens.count == 3)
+      #expect(tokens[0].type == .string("This is a string"))
+      #expect(tokens[0].lexeme == "This is a string")
+      #expect(tokens[0].line == 1)
+      #expect(tokens[1].type == .string("and this is another string"))
+      #expect(tokens[1].lexeme == "and this is another string")
+      #expect(tokens[1].line == 2)
+    case .failure(let errors):
+      try #require(errors.errors.count == 0)
+    }
+
+  }
+
 }

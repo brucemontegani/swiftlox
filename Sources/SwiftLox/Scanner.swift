@@ -5,6 +5,7 @@ public class Scanner {
   private var line = 1
   private var current: String.Index
   private var start: String.Index
+  // private var errors: [ScanError] = []
 
   public init(source: String) {
     self.source = source
@@ -64,14 +65,19 @@ public class Scanner {
     case "+": token = createToken(type: .plus)
     case ";": token = createToken(type: .semiColon)
     case "*": token = createToken(type: .star)
-    case "/":
-      if match("/") {  // Skip comments
-        while let next = peek(), next != "\n" {
-          _ = advance()
+    case "\"":
+      let result = string()
+      switch result {
+      case .success(let stringToken):
+        if let stringToken {
+          token = stringToken
+        } else {
+          return .success(nil)
         }
-      } else {
-        token = createToken(type: .slash)
+      case .failure(let error):
+        return .failure(error)
       }
+    case "/": token = isComment() ? nil : createToken(type: .slash)
     case "!": token = createToken(type: match("=") ? .bangEqual : .bang)
     case "=": token = createToken(type: match("=") ? .equalEqual : .equal)
     case ">": token = createToken(type: match("=") ? .greaterEqual : .greater)
@@ -102,6 +108,42 @@ public class Scanner {
     let char = source[current]
     current = source.index(after: current)
     return char
+  }
+
+  private func isComment() -> Bool {
+    if match("/") {  // Skip comments
+      while let next = peek(), !next.isNewline {
+        _ = advance()
+      }
+      return true
+    }
+    return false
+  }
+
+  private func string() -> Result<Token?, ScanError> {
+    while let next = peek(), next != "\"" {
+      if next.isNewline {
+        line += 1
+      }
+      _ = advance()
+    }
+
+    if isAtEnd() {
+      return .failure(ScanError(line: line, message: "unterminated string"))
+    }
+
+    _ = advance()
+
+    let stringStart = source.index(after: start)
+    let stringEnd = source.index(before: current)
+    let numberOfChars = source.distance(from: stringStart, to: stringEnd)
+    if numberOfChars == 0 {
+      return .success(nil)
+    }
+
+    let text = String(source[stringStart..<stringEnd])
+    return .success(Token(type: .string(text), lexeme: text, line: line))
+
   }
 
   private func createToken(type: TokenType) -> Token {
