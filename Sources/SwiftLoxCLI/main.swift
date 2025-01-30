@@ -33,16 +33,34 @@ struct SwiftLoxCLI: ParsableCommand {
     print("SwiftLox REPL v0.0.1")
     while true {
       print("> ", terminator: "")
-      guard let line = readLine() else { break }
-      if line.isEmpty { continue }
+      var source = ""
+      while let line = readLine(strippingNewline: false) {
+        if line.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+          break
+        }
+        source += line
+      }
+      if source.isEmpty { continue }
       // We'll implement this later
-      run(source: line)
+      run(source: source)
     }
   }
 
   private func run(source: String) {
+    print("Input: \(source)")
+    let scanner = Scanner(source: source)
+    let result = scanner.scanTokens()
+    switch result {
+    case .success(let tokens):
+      for token in tokens {
+        print(token)
+      }
+    case .failure(let scannerErrors):
+      for error in scannerErrors.errors {
+        print(error)
+      }
+    }
     // This will be implemented as we build our interpreter
-    print("Running: \(source)")
   }
 }
 

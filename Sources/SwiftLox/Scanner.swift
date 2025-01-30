@@ -68,7 +68,7 @@ public class Scanner {
     case "\"": return string()
     case let c where c.isWholeNumber: token = number()
     case "/": token = isComment() ? nil : createToken(type: .slash)
-    case let c where c.isAlpha: token = identifier()
+    case let c where c.isAlpha: token = identifierOrKeyword()
     case "!": token = createToken(type: match("=") ? .bangEqual : .bang)
     case "=": token = createToken(type: match("=") ? .equalEqual : .equal)
     case ">": token = createToken(type: match("=") ? .greaterEqual : .greater)
@@ -166,13 +166,13 @@ public class Scanner {
     return createToken(type: tokenType)
   }
 
-  private func identifier() -> Token {
+  private func identifierOrKeyword() -> Token {
     while let next = peek(), next.isAlphaNumeric {
       _ = advance()
     }
 
     let lexeme = String(source[start..<current])
-    if let keyword = Keyword(rawValue: lexeme) {
+    if let keyword = Keyword(rawValue: lexeme.uppercased()) {
       return Token(type: .keyword(keyword), lexeme: lexeme, line: line)
     }
     return Token(type: .identifier, lexeme: lexeme, line: line)

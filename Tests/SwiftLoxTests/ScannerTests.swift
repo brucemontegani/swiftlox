@@ -197,13 +197,13 @@ struct ScannerTests {
     switch result {
     case .success(let tokens):
       try #require(tokens.count == 4)
-      #expect(tokens[0].type == .keyword(.AND))
+      #expect(tokens[0].type == .keyword(.and))
       #expect(tokens[0].lexeme == "and")
       #expect(tokens[0].line == 1)
-      #expect(tokens[1].type == .keyword(.FOR))
+      #expect(tokens[1].type == .keyword(.for))
       #expect(tokens[1].lexeme == "for")
       #expect(tokens[1].line == 1)
-      #expect(tokens[2].type == .keyword(.RETURN))
+      #expect(tokens[2].type == .keyword(.return))
       #expect(tokens[2].lexeme == "return")
       #expect(tokens[2].line == 1)
     case .failure(_):

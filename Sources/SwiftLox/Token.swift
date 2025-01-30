@@ -1,4 +1,4 @@
-public enum TokenType: Equatable {
+public enum TokenType: CustomStringConvertible, Equatable {
   case leftParen, rightParen
   case leftBrace, rightBrace
   case comma, dot, minus, plus, semiColon, slash, star
@@ -17,56 +17,80 @@ public enum TokenType: Equatable {
 
   var rawValue: String {
     switch self {
-    case .leftParen: return "("
-    case .rightParen: return ")"
-    case .leftBrace: return "{"
-    case .rightBrace: return "}"
-    case .comma: return ","
-    case .dot: return "."
-    case .minus: return "-"
-    case .plus: return "+"
-    case .semiColon: return ";"
-    case .slash: return "/"
-    case .star: return "*"
-    case .less: return "<"
-    case .equal: return "="
-    case .greater: return ">"
-    case .bang: return "!"
-    case .lessEqual: return "<="
-    case .equalEqual: return "=="
-    case .greaterEqual: return ">="
-    case .bangEqual: return "!="
-    case .eof: return "eof"
-    case .comment: return "comment"
-    case .string: return "string"
-    case .number: return "number"
-    case .identifier: return "identifier"
-    case .keyword: return "identifier"
+    case .leftParen: return "LEFT_PAREN"
+    case .rightParen: return "RIGHT_PAREN"
+    case .leftBrace: return "LEFT_BRACE"
+    case .rightBrace: return "RIGHT_BRACE"
+    case .comma: return "COMMA"
+    case .dot: return "DOT"
+    case .minus: return "MINUS"
+    case .plus: return "PLUS"
+    case .semiColon: return "SEMICOLON"
+    case .slash: return "SLASH"
+    case .star: return "STAR"
+    case .less: return "LESS"
+    case .equal: return "EQUAL"
+    case .greater: return "GREATER"
+    case .bang: return "BANG"
+    case .lessEqual: return "BANG_EQUAL"
+    case .equalEqual: return "EQUAL_EQUAL"
+    case .greaterEqual: return "GREATER_EQUAL"
+    case .bangEqual: return "BANG_EQUAL"
+    case .eof: return "EOF"
+    case .comment: return ""
+    case .string: return "STRING"
+    case .number: return "NUMBER"
+    case .identifier: return "IDENTIFIER"
+    case .keyword: return "KEYWORD"
+    }
+  }
+
+  public var description: String {
+    switch self {
+    case .number(let value):
+      switch value {
+      case .integer(let intValue):
+        return "\(value.rawValue)(\(intValue))"
+      case .floatingPoint(let doubleValue):
+        return "\(value.rawValue)(\(doubleValue))"
+      }
+    case .keyword(let keyword):
+      return "\(self.rawValue)(\(keyword.rawValue))"
+    default:
+      return self.rawValue
     }
   }
 }
 
 public enum Keyword: String, Equatable {
-  case AND = "and"
-  case CLASS = "class"
-  case ELSE = "else"
-  case FALSE = "false"
-  case FOR = "for"
-  case FUN = "fun"
-  case IF = "if"
-  case OR = "or"
-  case PRINT = "print"
-  case RETURN = "return"
-  case SUPER = "super"
-  case THIS = "this"
-  case TRUE = "true"
-  case VAR = "var"
-  case WHILE = "while"
+  case `and` = "AND"
+  case `class` = "CLASS"
+  case `else` = "ELSE"
+  case `false` = "FALSE"
+  case `for` = "FOR"
+  case `fun` = "FUN"
+  case `if` = "IF"
+  case `or` = "OR"
+  case `print` = "PRINT"
+  case `return` = "RETURN"
+  case `super` = "SUPER"
+  case `this` = "THIS"
+  case `true` = "TRUE"
+  case `var` = "VAR"
+  case `while` = "WHILE"
 }
 
 public enum NumberLiteral: Equatable {
   case integer(Int)
   case floatingPoint(Double)
+
+  var rawValue: String {
+    switch self {
+    case .integer: return "INTEGER"
+    case .floatingPoint: return "FLOATING_POINT"
+    }
+  }
+
 }
 
 public struct Token: CustomStringConvertible, Equatable {
@@ -81,19 +105,6 @@ public struct Token: CustomStringConvertible, Equatable {
   }
 
   public var description: String {
-    switch type {
-    // case .number(let value):
-    //   switch value {
-    //   case .integer(let intValue):
-    //     return "number ( \(lexeme) ) \(intValue)"
-    //   case .floatingPoint(let doubleValue):
-    //     return "number ( \(lexeme) ) \(doubleValue)"
-    //   }
-    case .eof:
-      return "eof ( \(lexeme) )"
-    default:
-      return "\(type) ( \(lexeme) )"
-    }
-
+    return "Type: \(type), Lexeme: \(lexeme), Line#: \(line)"
   }
 }
