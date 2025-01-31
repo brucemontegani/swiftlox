@@ -187,4 +187,20 @@ struct ScannerTests {
 
   }
 
+  @Test func scannerBenchmark() async throws {
+    let source = try! String(contentsOfFile: "tokenized_input.txt", encoding: .utf8)
+    if let data = source.data(using: .utf8) {
+      let scanner = Scanner(source: data)
+
+      let start1 = ContinuousClock.now
+      _ = scanner.scanTokens()
+      let end1 = ContinuousClock.now
+
+      let time1 = start1.duration(to: end1)
+
+      print("Optimized Scanner Time: \(time1)")
+
+    }
+
+  }
 }
