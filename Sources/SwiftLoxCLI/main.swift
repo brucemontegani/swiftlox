@@ -48,17 +48,21 @@ struct SwiftLoxCLI: ParsableCommand {
 
   private func run(source: String) {
     print("Input: \(source)")
-    let scanner = Scanner(source: source)
-    let result = scanner.scanTokens()
-    switch result {
-    case .success(let tokens):
-      for token in tokens {
-        print(token)
+    if let data = source.data(using: .utf8) {
+      let scanner = Scanner(source: data)
+      let (tokens, errors) = scanner.scanTokens()
+      if !tokens.isEmpty {
+        for token in tokens {
+          print(token)
+        }
       }
-    case .failure(let scannerErrors):
-      for error in scannerErrors.errors {
-        print(error)
+      if !errors.isEmpty {
+        for error in errors {
+          print(error)
+        }
       }
+    } else {
+      print("Failed to convert string to data")
     }
     // This will be implemented as we build our interpreter
   }

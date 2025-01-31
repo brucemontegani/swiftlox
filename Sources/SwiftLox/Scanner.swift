@@ -1,16 +1,14 @@
 // Sources/SwiftLox/Scanner.swift
+import FoundationEssentials
 
 public class Scanner {
-  private let source: String
+  private let source: Data
   private var line = 1
-  private var current: String.Index
-  private var start: String.Index
-  // private var errors: [ScanError] = []
+  private var current = 0
+  private var start = 0
 
-  public init(source: String) {
+  public init(source: Data) {
     self.source = source
-    self.current = source.startIndex
-    self.start = source.startIndex
   }
 
   public struct ScannerErrors: Error, Equatable {
@@ -22,7 +20,7 @@ public class Scanner {
     public let message: String
   }
 
-  public func scanTokens() -> Result<[Token], ScannerErrors> {
+  public func scanTokens() -> ([Token], [ScanError]) {
     var tokens: [Token] = []
     var errors: [ScanError] = []
 
@@ -35,79 +33,83 @@ public class Scanner {
         if let token {
           tokens.append(token)
         }
+
       case .failure(let error):
         errors.append(error)
       }
+
     }
 
     tokens.append(Token(type: .eof, lexeme: "", line: line))
-
-    if errors.isEmpty {
-      return .success(tokens)
-    } else {
-      return .failure(ScannerErrors(errors: errors))
-    }
+    return (tokens, errors)
   }
 
   private func scanToken() -> Result<Token?, ScanError> {
-    let char = advance()
+    let byte = advance()
 
-    var token: Token? = nil
+    // var token: Token? = nil
 
-    switch char {
-    case "(": token = createToken(type: .leftParen)
-    case ")": token = createToken(type: .rightParen)
-    case "{": token = createToken(type: .leftBrace)
-    case "}": token = createToken(type: .rightBrace)
-    case ",": token = createToken(type: .comma)
-    case ".": token = createToken(type: .dot)
-    case "-": token = createToken(type: .minus)
-    case "+": token = createToken(type: .plus)
-    case ";": token = createToken(type: .semiColon)
-    case "*": token = createToken(type: .star)
-    case "\"": return string()
-    case let c where c.isWholeNumber: token = number()
-    case "/": token = isComment() ? nil : createToken(type: .slash)
-    case let c where c.isAlpha: token = identifierOrKeyword()
-    case "!": token = createToken(type: match("=") ? .bangEqual : .bang)
-    case "=": token = createToken(type: match("=") ? .equalEqual : .equal)
-    case ">": token = createToken(type: match("=") ? .greaterEqual : .greater)
-    case "<": token = createToken(type: match("=") ? .lessEqual : .less)
-    case let c where c.isNewline:
+    switch byte {
+    case UInt8(ascii: "("): return .success(createToken(type: .leftParen))
+    case UInt8(ascii: ")"): return .success(createToken(type: .rightParen))
+    case UInt8(ascii: "{"): return .success(createToken(type: .leftBrace))
+    case UInt8(ascii: "}"): return .success(createToken(type: .rightBrace))
+    case UInt8(ascii: ","): return .success(createToken(type: .comma))
+    case UInt8(ascii: "."): return .success(createToken(type: .dot))
+    case UInt8(ascii: "-"): return .success(createToken(type: .minus))
+    case UInt8(ascii: "+"): return .success(createToken(type: .plus))
+    case UInt8(ascii: ";"): return .success(createToken(type: .semiColon))
+    case UInt8(ascii: "*"): return .success(createToken(type: .star))
+    case UInt8(ascii: "!"):
+      return match(UInt8(ascii: "="))
+        ? .success(createToken(type: .bangEqual)) : .success(createToken(type: .bang))
+    case UInt8(ascii: "="):
+      return match(UInt8(ascii: "="))
+        ? .success(createToken(type: .equalEqual)) : .success(createToken(type: .equal))
+    case UInt8(ascii: ">"):
+      return match(UInt8(ascii: "="))
+        ? .success(createToken(type: .greaterEqual)) : .success(createToken(type: .greater))
+    case UInt8(ascii: "<"):
+      return match(UInt8(ascii: "="))
+        ? .success(createToken(type: .lessEqual)) : .success(createToken(type: .less))
+    case UInt8(ascii: "\""): return string()
+    case UInt8(ascii: "/"): return isComment() ? .success(nil) : .success(createToken(type: .slash))
+    case let b where b.isNumber: return .success(number())
+    case let b where b.isAlpha: return .success(identifierOrKeyword())
+    case let b where b.isWhitespace: return .success(nil)
+    case let b where b.isNewline:
       line += 1
       return .success(nil)
-    case let c where c.isWhitespace: return .success(nil)
     default:
-      return .failure(ScanError(line: line, message: "unexpected character: \(char)"))
+      return .failure(
+        ScanError(line: line, message: "Unexpected character: \(Character(Unicode.Scalar(byte)))"))
     }
-
-    return .success(token)
   }
 
-  private func match(_ expected: Character) -> Bool {
+  private func match(_ expected: UInt8) -> Bool {
     guard !isAtEnd() && source[current] == expected else { return false }
     _ = advance()
     return true
   }
 
-  private func peek() -> Character? {
+  private func peek() -> UInt8? {
     if isAtEnd() { return nil }
     return source[current]
   }
 
-  private func peekNext() -> Character? {
+  private func peekNext() -> UInt8? {
     if isAtEnd() { return nil }
-    return source[source.index(after: current)]
+    return source[current + 1]
   }
 
-  private func advance() -> Character {
-    let char = source[current]
-    current = source.index(after: current)
-    return char
+  private func advance() -> UInt8 {
+    let byte = source[current]
+    current += 1
+    return byte
   }
 
   private func isComment() -> Bool {
-    if match("/") {  // Skip comments
+    if match(UInt8(ascii: "/")) {  // Skip comments
       while let next = peek(), !next.isNewline {
         _ = advance()
       }
@@ -117,7 +119,7 @@ public class Scanner {
   }
 
   private func string() -> Result<Token?, ScanError> {
-    while let next = peek(), next != "\"" {
+    while let next = peek(), next != UInt8(ascii: "\"") {
       if next.isNewline {
         line += 1
       }
@@ -130,36 +132,37 @@ public class Scanner {
 
     _ = advance()
 
-    let stringStart = source.index(after: start)
-    let stringEnd = source.index(before: current)
-    let numberOfChars = source.distance(from: stringStart, to: stringEnd)
+    let startPos = start + 1
+    let endPos = current - 1
+
+    let numberOfChars = endPos - startPos
     if numberOfChars == 0 {
       return .success(nil)
     }
 
-    let text = String(source[stringStart..<stringEnd])
+    let text = String(bytes: source[startPos..<endPos], encoding: .utf8) ?? ""
     return .success(Token(type: .string(text), lexeme: text, line: line))
 
   }
 
   private func number() -> Token {
-    while let next = peek(), next.isWholeNumber {
+    while let next = peek(), next.isNumber {
       _ = advance()
     }
 
     var isInteger = true
 
-    if let next = peek(), next == "." {
-      if let peekNext = peekNext(), peekNext.isWholeNumber {
+    if let next = peek(), next == UInt8(ascii: ".") {
+      if let peekNext = peekNext(), peekNext.isNumber {
         isInteger = false
         _ = advance()
-        while let next = peek(), next.isWholeNumber {
+        while let next = peek(), next.isNumber {
           _ = advance()
         }
       }
     }
 
-    let valueAsString = String(source[start..<current])
+    let valueAsString = String(bytes: source[start..<current], encoding: .utf8) ?? ""
     let tokenType = TokenType.number(
       isInteger ? .integer(Int(valueAsString)!) : .floatingPoint(Double(valueAsString)!))
 
@@ -171,7 +174,7 @@ public class Scanner {
       _ = advance()
     }
 
-    let lexeme = String(source[start..<current])
+    let lexeme = String(bytes: source[start..<current], encoding: .utf8) ?? ""
     if let keyword = Keyword(rawValue: lexeme.uppercased()) {
       return Token(type: .keyword(keyword), lexeme: lexeme, line: line)
     }
@@ -179,21 +182,35 @@ public class Scanner {
   }
 
   private func createToken(type: TokenType) -> Token {
-    return Token(type: type, lexeme: String(source[start..<current]), line: line)
+    return Token(
+      type: type, lexeme: String(bytes: source[start..<current], encoding: .utf8) ?? "", line: line)
   }
 
   private func isAtEnd() -> Bool {
-    return current >= source.endIndex
+    return current >= source.count
   }
 
 }
 
-extension Character {
-  public var isAlpha: Bool {
-    return ("A"..."Z").contains(self) || ("a"..."z").contains(self) || self == "_"
+extension UInt8 {
+  var isAlpha: Bool {
+    return (self >= UInt8(ascii: "A") && self <= UInt8(ascii: "Z"))
+      || (self >= UInt8(ascii: "a") && self <= UInt8(ascii: "z")) || self == UInt8(ascii: "_")
   }
 
-  public var isAlphaNumeric: Bool {
-    return isAlpha || isWholeNumber
+  var isNumber: Bool {
+    return self >= UInt8(ascii: "0") && self <= UInt8(ascii: "9")
+  }
+
+  var isWhitespace: Bool {
+    return self == UInt8(ascii: " ") || self == UInt8(ascii: "\t") || self == UInt8(ascii: "\r")
+  }
+
+  var isNewline: Bool {
+    return self == UInt8(ascii: "\n")
+  }
+
+  var isAlphaNumeric: Bool {
+    return self.isAlpha || self.isNumber
   }
 }
