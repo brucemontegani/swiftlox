@@ -188,7 +188,7 @@ struct ScannerTests {
   }
 
   @Test func scannerBenchmark() async throws {
-    let source = try! String(contentsOfFile: "tokenized_input.txt", encoding: .utf8)
+    let source = try! String(contentsOfFile: "large_token_input.txt", encoding: .utf8)
     if let data = source.data(using: .utf8) {
       let scanner = Scanner(source: data)
 
