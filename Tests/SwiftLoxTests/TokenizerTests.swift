@@ -1,11 +1,11 @@
-// Tests/SwiftLoxTests/ScannerTests.swift
+// Tests/SwiftLoxTests/lexerTests.swift
 
 import Testing
 import XCTest
 
 @testable import SwiftLox
 
-struct ScannerTests {
+struct LexerTests {
   @Test(
     "Scan single character tokens with and without spaces",
     arguments: ["(){},.-+;*=!></", "( ) { } , . - + ; * = ! > < /"])
@@ -31,8 +31,8 @@ struct ScannerTests {
     ]
 
     if let data = source.data(using: .utf8) {
-      let scanner = Scanner(source: data)
-      let (tokens, errors) = scanner.scanTokens()
+      let lexer = Lexer(source: data)
+      let (tokens, errors) = lexer.tokenize()
 
       try #require(tokens.count == expectedTokens.count)
       try #require(errors.count == 0)
@@ -51,8 +51,8 @@ struct ScannerTests {
     ]
 
     if let data = source.data(using: .utf8) {
-      let scanner = Scanner(source: data)
-      let (tokens, errors) = scanner.scanTokens()
+      let lexer = Lexer(source: data)
+      let (tokens, errors) = lexer.tokenize()
 
       try #require(tokens.count == expectedTokens.count)
       try #require(errors.count == 0)
@@ -64,8 +64,8 @@ struct ScannerTests {
   @Test("Scan for comment tokens", arguments: ["//comment\n"])
   func scanSlashAndCommentTokens(source: String) throws {
     if let data = source.data(using: .utf8) {
-      let scanner = Scanner(source: data)
-      let (tokens, errors) = scanner.scanTokens()
+      let lexer = Lexer(source: data)
+      let (tokens, errors) = lexer.tokenize()
 
       try #require(tokens.count == 1)
       try #require(errors.count == 0)
@@ -82,8 +82,8 @@ struct ScannerTests {
 
     let source = "\n\n"
     if let data = source.data(using: .utf8) {
-      let scanner = Scanner(source: data)
-      let (tokens, errors) = scanner.scanTokens()
+      let lexer = Lexer(source: data)
+      let (tokens, errors) = lexer.tokenize()
 
       try #require(tokens.count == 1)
       try #require(errors.count == 0)
@@ -99,8 +99,8 @@ struct ScannerTests {
   func scanString() throws {
     let source = "\"This is a string\"\n\"and this is another string\""
     if let data = source.data(using: .utf8) {
-      let scanner = Scanner(source: data)
-      let (tokens, errors) = scanner.scanTokens()
+      let lexer = Lexer(source: data)
+      let (tokens, errors) = lexer.tokenize()
 
       try #require(tokens.count == 3)
       try #require(errors.count == 0)
@@ -120,8 +120,8 @@ struct ScannerTests {
     arguments: ["1234 123.45"])
   func scanNumber(source: String) throws {
     if let data = source.data(using: .utf8) {
-      let scanner = Scanner(source: data)
-      let (tokens, errors) = scanner.scanTokens()
+      let lexer = Lexer(source: data)
+      let (tokens, errors) = lexer.tokenize()
 
       try #require(tokens.count == 3)
       try #require(errors.count == 0)
@@ -144,8 +144,8 @@ struct ScannerTests {
     arguments: ["Abc9_R abcD8 _1ABC"])
   func scanIdentifier(source: String) throws {
     if let data = source.data(using: .utf8) {
-      let scanner = Scanner(source: data)
-      let (tokens, errors) = scanner.scanTokens()
+      let lexer = Lexer(source: data)
+      let (tokens, errors) = lexer.tokenize()
 
       try #require(tokens.count == 4)
       try #require(errors.count == 0)
@@ -168,8 +168,8 @@ struct ScannerTests {
     arguments: ["and for return"])
   func scanKeyword(source: String) throws {
     if let data = source.data(using: .utf8) {
-      let scanner = Scanner(source: data)
-      let (tokens, errors) = scanner.scanTokens()
+      let lexer = Lexer(source: data)
+      let (tokens, errors) = lexer.tokenize()
 
       try #require(tokens.count == 4)
       try #require(errors.count == 0)
@@ -187,18 +187,18 @@ struct ScannerTests {
 
   }
 
-  @Test func scannerBenchmark() async throws {
+  @Test func lexerBenchmark() async throws {
     let source = try! String(contentsOfFile: "large_token_input.txt", encoding: .utf8)
     if let data = source.data(using: .utf8) {
-      let scanner = Scanner(source: data)
+      let lexer = Lexer(source: data)
 
       let start1 = ContinuousClock.now
-      _ = scanner.scanTokens()
+      _ = lexer.tokenize()
       let end1 = ContinuousClock.now
 
       let time1 = start1.duration(to: end1)
 
-      print("Optimized Scanner Time: \(time1)")
+      print("Optimized lexer Time: \(time1)")
 
     }
 

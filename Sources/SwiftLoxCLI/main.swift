@@ -49,8 +49,8 @@ struct SwiftLoxCLI: ParsableCommand {
   private func run(source: String) {
     print("Input: \(source)")
     if let data = source.data(using: .utf8) {
-      let scanner = Scanner(source: data)
-      let (tokens, errors) = scanner.scanTokens()
+      let lexer = Lexer(source: data)
+      let (tokens, errors) = lexer.tokenize()
       if !tokens.isEmpty {
         for token in tokens {
           print(token)

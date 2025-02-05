@@ -1,7 +1,7 @@
 // Sources/SwiftLox/Scanner.swift
 import FoundationEssentials
 
-public class Scanner {
+public class Lexer {
   private let source: Data
   private var line = 1
   private var current = 0
@@ -11,18 +11,18 @@ public class Scanner {
     self.source = source
   }
 
-  public struct ScannerErrors: Error, Equatable {
-    public let errors: [ScanError]
+  public struct LexerErrors: Error, Equatable {
+    public let errors: [TokenizeError]
   }
 
-  public struct ScanError: Error, Equatable {
+  public struct TokenizeError: Error, Equatable {
     public let line: Int
     public let message: String
   }
 
-  public func scanTokens() -> ([Token], [ScanError]) {
+  public func tokenize() -> ([Token], [TokenizeError]) {
     var tokens: [Token] = []
-    var errors: [ScanError] = []
+    var errors: [TokenizeError] = []
 
     while !isAtEnd() {
       start = current
@@ -44,7 +44,7 @@ public class Scanner {
     return (tokens, errors)
   }
 
-  private func scanToken() -> Result<Token?, ScanError> {
+  private func scanToken() -> Result<Token?, TokenizeError> {
     let byte = advance()
 
     // var token: Token? = nil
@@ -82,7 +82,8 @@ public class Scanner {
       return .success(nil)
     default:
       return .failure(
-        ScanError(line: line, message: "Unexpected character: \(Character(Unicode.Scalar(byte)))"))
+        TokenizeError(
+          line: line, message: "Unexpected character: \(Character(Unicode.Scalar(byte)))"))
     }
   }
 
@@ -118,7 +119,7 @@ public class Scanner {
     return false
   }
 
-  private func string() -> Result<Token?, ScanError> {
+  private func string() -> Result<Token?, TokenizeError> {
     while let next = peek(), next != UInt8(ascii: "\"") {
       if next.isNewline {
         line += 1
@@ -127,7 +128,7 @@ public class Scanner {
     }
 
     if isAtEnd() {
-      return .failure(ScanError(line: line, message: "unterminated string"))
+      return .failure(TokenizeError(line: line, message: "unterminated string"))
     }
 
     _ = advance()
